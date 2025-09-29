@@ -8,6 +8,10 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.PERM_NOT_FOUND]: 'Group Permission not found',
   [ErrorCode.INVALID_FILE_TYPE]: 'Invalid File Type',
   [ErrorCode.FILE_TOO_LARGE]: 'File too large',
+  [ErrorCode.WRONG_PASSWORD]: 'Wrong password',
+  [ErrorCode.ACCOUNT_BANNED]: 'Account Banned',
+  [ErrorCode.ACCOUNT_USERNAME_IS_EXIST]: 'Account username is existed',
+  [ErrorCode.WRONG_RE_PASSWORD]: 'Wrong re password',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {

@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseOptions } from '@app/core';
 import { RequestIdMiddleware } from '@app/core/middleware/requestId.middleware';
+import { AuthModule } from './auth/auth.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Module({
   imports: [
@@ -12,6 +15,7 @@ import { RequestIdMiddleware } from '@app/core/middleware/requestId.middleware';
       useClass: DatabaseOptions,
     }),
     EventEmitterModule.forRoot(),
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
