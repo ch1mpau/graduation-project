@@ -12,6 +12,9 @@ export class UserEntity extends WithId(DateEntity) {
   @Column({ type: String, nullable: false })
   email: string | null;
 
+  @Column({ type: String, nullable: true, default: null })
+  name: string | null;
+
   @Column({ type: String, nullable: false })
   password: string | null;
 

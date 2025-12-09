@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/response-login.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
+import { UserDto } from '../user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +43,7 @@ export class AuthService {
       throw new AppUnAuthorizedException(ErrorCode.WRONG_PASSWORD);
     }
     const accessToken = this.jwtService.sign(payload);
-    return { accessToken, user: payload };
+    return { accessToken, user: new UserDto(user) };
   }
 
   async signup(signUpDto: SignUpDto): Promise<any> {

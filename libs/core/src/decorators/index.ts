@@ -17,4 +17,5 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 export const RequireRole = (...depth: Role[]) => SetMetadata(ROLES, depth);
 
 export const RequireAdmin = () => RequireRole(Role.Admin);
-export const RequireUser = () => RequireRole(Role.User);
+export const RequireDirector = () => RequireRole(Role.Director);
+export const RequireEmployee = () => RequireRole(Role.Employee);
