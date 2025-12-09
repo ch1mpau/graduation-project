@@ -12,6 +12,7 @@ import { TransformResponseInterceptor } from '@app/core/interceptors/transform-r
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/response-login.dto';
 import { SignUpDto } from './dto/signup.dto';
+import { CreateAccountDto } from './dto/create-account.dto';
 
 @ApiTags('Auth')
 @Controller({
@@ -32,5 +33,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async signup(@Body() signUpDto: SignUpDto): Promise<any> {
     return await this.authService.signup(signUpDto);
+  }
+
+  @Post('')
+  @HttpCode(HttpStatus.OK)
+  async createAccount(@Body() data: CreateAccountDto): Promise<any> {
+    return await this.authService.createAccount(data);
   }
 }

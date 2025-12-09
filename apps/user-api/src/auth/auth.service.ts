@@ -6,7 +6,7 @@ import {
   Role,
 } from '@app/core';
 import { StatusAccount } from '@app/core/constants/status-account';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +14,7 @@ import { UserEntity } from '@app/core/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/response-login.dto';
 import { SignUpDto } from './dto/signup.dto';
+import { CreateAccountDto } from './dto/create-account.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +42,7 @@ export class AuthService {
       throw new AppUnAuthorizedException(ErrorCode.WRONG_PASSWORD);
     }
     const accessToken = this.jwtService.sign(payload);
-    return { accessToken };
+    return { accessToken, user: payload };
   }
 
   async signup(signUpDto: SignUpDto): Promise<any> {
@@ -66,12 +67,47 @@ export class AuthService {
           email: signUpDto.email,
           password: signUpDto.password,
           status: StatusAccount.ACTIVE,
-          role: Role.Employee,
+          role: Role.Director,
         }),
       );
       return;
     } catch (error) {
       throw error;
+    }
+  }
+
+  async createAccount(data: CreateAccountDto): Promise<any> {
+    try {
+      const { email, password, name, phoneNumber } = data;
+      const user = await this.usersRepository.findOne({
+        where: {
+          email,
+          deleted_at: null,
+          status: StatusAccount.ACTIVE,
+        },
+      });
+      if (!!user) {
+        throw new AppUnAuthorizedException(ErrorCode.EMAIL_IS_EXIST);
+      }
+      await this.usersRepository.save(
+        this.usersRepository.create({
+          email,
+          password,
+          status: StatusAccount.ACTIVE,
+          role: Role.Employee,
+          name,
+          phone_number: phoneNumber,
+        }),
+      );
+    } catch (error) {
+      Logger.error('Create account error', error);
+      if (
+        error instanceof AppBadRequestException ||
+        error instanceof AppUnAuthorizedException
+      ) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.CREATE_ACCOUNT_ERROR);
     }
   }
 }
