@@ -26,7 +26,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const user = await this.usersRepository.findOne({
       where: {
-        username: loginDto.username,
+        email: loginDto.email,
         status: StatusAccount.ACTIVE,
         deleted_at: null,
       },
@@ -48,7 +48,7 @@ export class AuthService {
     try {
       const user = await this.usersRepository.findOne({
         where: {
-          username: signUpDto.username,
+          email: signUpDto.email,
           deleted_at: null,
         },
       });
@@ -56,17 +56,17 @@ export class AuthService {
         throw new AppBadRequestException(ErrorCode.ACCOUNT_BANNED);
       }
       if (!!user) {
-        throw new AppUnAuthorizedException(ErrorCode.ACCOUNT_USERNAME_IS_EXIST);
+        throw new AppUnAuthorizedException(ErrorCode.EMAIL_IS_EXIST);
       }
       if (signUpDto.password !== signUpDto.rePassword) {
         throw new AppUnAuthorizedException(ErrorCode.WRONG_RE_PASSWORD);
       }
       await this.usersRepository.save(
         this.usersRepository.create({
-          username: signUpDto.username,
+          email: signUpDto.email,
           password: signUpDto.password,
           status: StatusAccount.ACTIVE,
-          role: Role.User,
+          role: Role.Employee,
         }),
       );
       return;

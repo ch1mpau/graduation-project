@@ -4,17 +4,19 @@ import { WithId } from './with-id.entity';
 import { Role } from '../constants';
 import { StatusAccount } from '../constants/status-account';
 
-
 @Entity({
   name: 'user',
 })
 export class UserEntity extends WithId(DateEntity) {
   @Index({ unique: true })
   @Column({ type: String, nullable: false })
-  username: string | null;
+  email: string | null;
 
   @Column({ type: String, nullable: false })
   password: string | null;
+
+  @Column({ type: String, nullable: true, default: null })
+  phone_number: string | null;
 
   @Column({ type: String, nullable: true })
   role: Role;

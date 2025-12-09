@@ -1,0 +1,64 @@
+services:
+  # graduation_project:
+  #   image: image
+  #   ports:
+  #     - ${USER_PORT}:3000
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   networks:
+  #     - db_nw
+  #     - web_nw
+  #   restart: unless-stopped
+
+  postgres:
+    image: postgres:16.3
+    command: postgres -c 'max_connections=200'
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - new-db:/var/lib/postgresql/data
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - db_nw
+
+  # app_nginx:
+  #   image: nginx:latest
+  #   container_name: nginx_graduation_project
+  #   restart: always
+  #   volumes:
+  #     - ./cfg/nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 8890:80
+  #   networks:
+  #     - web_nw
+  #   depends_on:
+  #     - sonu_web_ai_prod
+
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: always
+  #   ports:
+  #     - 6379:6379
+  #   networks:
+  #     - db_nw
+  #   env_file:
+  #     - .env
+
+volumes:
+  new-db:
+    driver: local
+
+networks:
+  db_nw:
+    driver: bridge
+  web_nw:
+    driver: bridge

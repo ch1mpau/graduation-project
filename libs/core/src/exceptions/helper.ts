@@ -10,7 +10,7 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.FILE_TOO_LARGE]: 'File too large',
   [ErrorCode.WRONG_PASSWORD]: 'Wrong password',
   [ErrorCode.ACCOUNT_BANNED]: 'Account Banned',
-  [ErrorCode.ACCOUNT_USERNAME_IS_EXIST]: 'Account username is existed',
+  [ErrorCode.EMAIL_IS_EXIST]: 'Email is existed',
   [ErrorCode.WRONG_RE_PASSWORD]: 'Wrong re password',
 };
 

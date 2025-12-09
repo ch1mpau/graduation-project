@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       .getOne();
 
     if (!user) {
-      throw new AppUnAuthorizedException(ErrorCode.UNAUTHORIZED)
+      throw new AppUnAuthorizedException(ErrorCode.UNAUTHORIZED);
     }
 
     return user;

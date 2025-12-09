@@ -15,7 +15,7 @@ dotenv.config();
       useClass: DatabaseOptions,
     }),
     EventEmitterModule.forRoot(),
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
