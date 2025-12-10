@@ -22,7 +22,10 @@
     "migration:generate": "npm run typeorm --  migration:generate",
     "migration:create": "npm run typeorm -- migration:create",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "docker:build": "docker buildx build --platform linux/amd64 -t tranxuanhuy3201/graduation:latest . -f apps/user-api/Dockerfile",
+    "docker:push": "docker push tranxuanhuy3201/graduation:latest",
+    "docker:deploy": "npm run docker:build && npm run docker:push"
   },
   "dependencies": {
     "@bull-board/nestjs": "^6.2.1",
