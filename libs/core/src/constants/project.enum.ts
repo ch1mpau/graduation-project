@@ -11,3 +11,10 @@ export enum TaskPriorityEnum {
   HIGH = 'HIGH',
   VERY_HIGH = 'VERY_HIGH',
 }
+
+export enum TaskStatusEnum {
+  STARTED = 'STARTED', // Bắt đầu
+  ACCEPTED = 'ACCEPTED', // Đã nhận việc
+  IN_PROGRESS = 'IN_PROGRESS', // Đang thực hiện
+  COMPLETED = 'COMPLETED', // Hoàn thành
+}

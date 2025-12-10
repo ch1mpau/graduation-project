@@ -16,6 +16,7 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.USER_NOT_ACTIVE]: 'User Not Active',
   [ErrorCode.USER_IS_BLOCKED]: 'User is Blocked',
   [ErrorCode.CREATE_ACCOUNT_ERROR]: 'Create Account Error',
+  [ErrorCode.CREATE_PROJECT_ERROR]: 'Create Project Error',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {

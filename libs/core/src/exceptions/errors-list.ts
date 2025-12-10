@@ -39,4 +39,7 @@ export enum ErrorCode {
   USER_NOT_ACTIVE = 'ER00402',
   USER_IS_BLOCKED = 'ER00403',
   CREATE_ACCOUNT_ERROR = 'ER00404',
+
+  // project
+  CREATE_PROJECT_ERROR = 'ER00501',
 }

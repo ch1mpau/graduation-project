@@ -8,6 +8,7 @@ import { RequestIdMiddleware } from '@app/core/middleware/requestId.middleware';
 import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 import { UserModule } from './user/user.module';
+import { ProjectModule } from './project/project.module';
 dotenv.config();
 
 @Module({
@@ -18,6 +19,7 @@ dotenv.config();
     EventEmitterModule.forRoot(),
     AuthModule,
     UserModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

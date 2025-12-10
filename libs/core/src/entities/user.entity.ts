@@ -1,8 +1,10 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { DateEntity } from './with-date.entity';
 import { WithId } from './with-id.entity';
 import { Role } from '../constants';
 import { StatusAccount } from '../constants/status-account';
+import { TaskEntity } from './task.entity';
+import { ProjectEntity } from './project.entity';
 
 @Entity({
   name: 'user',
@@ -29,4 +31,10 @@ export class UserEntity extends WithId(DateEntity) {
 
   @Column('jsonb', { nullable: true })
   additional_data: any;
+
+  @OneToMany(() => ProjectEntity, (project) => project.user)
+  projects: ProjectEntity[];
+
+  @OneToMany(() => TaskEntity, (task) => task.user)
+  tasks: TaskEntity[];
 }
