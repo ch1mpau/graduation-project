@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -21,6 +24,11 @@ import {
   ProjectPaginatedDto,
   QueryProjectsDto,
 } from './dto/project.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { QueryTasksDto, TaskDto, TaskPaginatedDto } from './dto/task.dto';
+import { RequireDirector, RequireEmployee } from '@app/core';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @ApiTags('Project')
 @Controller({
@@ -49,5 +57,57 @@ export class ProjectController {
     @Query() query: QueryProjectsDto,
   ): Promise<ProjectPaginatedDto> {
     return await this.projectService.getProjects(auth, query);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @RequireDirector()
+  @HttpCode(HttpStatus.OK)
+  async deleteProject(
+    @AuthUser() auth: UserEntity,
+    @Param('id') id: string,
+  ): Promise<ProjectPaginatedDto> {
+    return await this.projectService.deleteProject(auth, id);
+  }
+
+  @Put('')
+  @UseGuards(JwtAuthGuard)
+  @RequireDirector()
+  @HttpCode(HttpStatus.OK)
+  async updateProject(
+    @AuthUser() auth: UserEntity,
+    @Body() body: UpdateProjectDto,
+  ): Promise<ProjectDto> {
+    return await this.projectService.updateProject(auth, body);
+  }
+
+  @Post('task')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async createTask(
+    @AuthUser() auth: UserEntity,
+    @Body() body: CreateTaskDto,
+  ): Promise<TaskDto> {
+    return await this.projectService.createTask(auth, body);
+  }
+
+  @Get('task')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getTasks(
+    @AuthUser() auth: UserEntity,
+    @Query() query: QueryTasksDto,
+  ): Promise<TaskPaginatedDto> {
+    return await this.projectService.getTasks(auth, query);
+  }
+
+  @Put('task')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateTask(
+    @AuthUser() auth: UserEntity,
+    @Body() body: UpdateTaskDto,
+  ): Promise<TaskDto> {
+    return await this.projectService.updateTask(auth, body);
   }
 }

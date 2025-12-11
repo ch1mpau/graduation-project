@@ -18,5 +18,5 @@ export class CreateProjectDto {
 
   @IsEnum(ProjectStatusEnum)
   @IsOptional()
-  status: ProjectStatusEnum = ProjectStatusEnum.CREATED;
+  status: ProjectStatusEnum = ProjectStatusEnum.PENDING;
 }

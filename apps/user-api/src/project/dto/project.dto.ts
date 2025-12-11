@@ -1,10 +1,7 @@
-import { PageQueryDto, Paginate, Role } from '@app/core';
+import { PageQueryDto, Paginate } from '@app/core';
 import { ProjectStatusEnum } from '@app/core/constants/project.enum';
-import { StatusAccount } from '@app/core/constants/status-account';
 import { ProjectEntity } from '@app/core/entities/project.entity';
-import { UserEntity } from '@app/core/entities/user.entity';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class ProjectDto {
   id: string;
@@ -33,6 +30,10 @@ export class QueryProjectsDto extends PageQueryDto {
   @IsString()
   @IsOptional()
   name: string;
+
+  @IsString()
+  @IsOptional()
+  status: ProjectStatusEnum;
 }
 
 export class ProjectPaginatedDto extends Paginate(ProjectDto) {}

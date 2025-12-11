@@ -17,6 +17,16 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.USER_IS_BLOCKED]: 'User is Blocked',
   [ErrorCode.CREATE_ACCOUNT_ERROR]: 'Create Account Error',
   [ErrorCode.CREATE_PROJECT_ERROR]: 'Create Project Error',
+  [ErrorCode.CREATE_TASK_ERROR]: 'Create Task Error',
+  [ErrorCode.PROJECT_NOT_FOUND]: 'Project Not Found',
+  [ErrorCode.GET_TASK_ERROR]: 'Get Task Error',
+  [ErrorCode.DELETE_PROJECT_ERROR]: 'Delete Project Error',
+  [ErrorCode.FORBIDDEN]: 'Forbidden',
+  [ErrorCode.UPDATE_PROJECT_ERROR]: 'Update Project Error',
+  [ErrorCode.PROJECT_COMPLETED]: 'Project already Completed',
+  [ErrorCode.UPDATE_TASK_ERROR]: 'Update Task Error',
+  [ErrorCode.TASK_NOT_FOUND]: 'Task Not Found',
+  [ErrorCode.TASK_COMPLETED]: 'Task already Completed',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {

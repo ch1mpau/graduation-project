@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DateEntity } from './with-date.entity';
 import { WithId } from './with-id.entity';
 import { ProjectStatusEnum } from '../constants/project.enum';
