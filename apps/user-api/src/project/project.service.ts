@@ -352,4 +352,46 @@ export class ProjectService {
       }
     }
   }
+
+  async getProjectById(auth: UserEntity, projectId: string) {
+    try {
+      const project = await this.projectsRepository.findOne({
+        where: {
+          id: projectId,
+          deleted_at: null,
+        },
+      });
+      if (!project) {
+        throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
+      }
+      return new ProjectDto(project);
+    } catch (error) {
+      Logger.error('Get project error', error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.GET_PROJECT_ERROR);
+    }
+  }
+
+  async getTaskById(auth: UserEntity, taskId: string) {
+    try {
+      const task = await this.tasksRepository.findOne({
+        where: {
+          id: taskId,
+          deleted_at: null,
+        },
+      });
+      if (!task) {
+        throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
+      }
+      return new TaskDto(task);
+    } catch (error) {
+      Logger.error('Get task error', error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.GET_TASK_ERROR);
+    }
+  }
 }

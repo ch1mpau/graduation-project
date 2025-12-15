@@ -59,6 +59,16 @@ export class ProjectController {
     return await this.projectService.getProjects(auth, query);
   }
 
+  @Get('detail/:id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getDetailProject(
+    @AuthUser() auth: UserEntity,
+    @Param('id') id: string,
+  ): Promise<ProjectDto> {
+    return await this.projectService.getProjectById(auth, id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @RequireDirector()
@@ -99,6 +109,16 @@ export class ProjectController {
     @Query() query: QueryTasksDto,
   ): Promise<TaskPaginatedDto> {
     return await this.projectService.getTasks(auth, query);
+  }
+
+  @Get('task/detail/:id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getDetailTask(
+    @AuthUser() auth: UserEntity,
+    @Param('id') id: string,
+  ): Promise<TaskDto> {
+    return await this.projectService.getTaskById(auth, id);
   }
 
   @Put('task')
