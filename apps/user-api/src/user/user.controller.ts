@@ -13,7 +13,7 @@ import { UserService } from './user.service';
 import { UserEntity } from '@app/core/entities/user.entity';
 import { JwtAuthGuard } from '../auth/gaurds/jwt.guard';
 import { AuthUser } from '@app/core/decorators/auth-user.decorator';
-import { QueryEmployeesDto } from './dto/user.dto';
+import { QueryEmployeesDto, UserDto } from './dto/user.dto';
 
 @ApiTags('User')
 @Controller({
@@ -32,5 +32,12 @@ export class UserController {
     @Query() query: QueryEmployeesDto,
   ): Promise<any> {
     return await this.userService.getEmployees(auth, query);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMe(@AuthUser() auth: UserEntity): Promise<UserDto> {
+    return await this.userService.getMe(auth);
   }
 }

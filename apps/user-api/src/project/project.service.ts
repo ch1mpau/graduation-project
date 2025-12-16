@@ -1,10 +1,16 @@
-import { AppBadRequestException, ErrorCode, PageMetaDto } from '@app/core';
+import {
+  AppBadRequestException,
+  ErrorCode,
+  PageMetaDto,
+  Role,
+} from '@app/core';
 import { StatusAccount } from '@app/core/constants/status-account';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
 import { UserEntity } from '@app/core/entities/user.entity';
 import {
+  DetailProjectDto,
   ProjectDto,
   ProjectPaginatedDto,
   QueryProjectsDto,
@@ -13,13 +19,19 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectEntity } from '@app/core/entities/project.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskEntity } from '@app/core/entities/task.entity';
-import { QueryTasksDto, TaskDto, TaskPaginatedDto } from './dto/task.dto';
+import {
+  GetTaskTypeEnum,
+  QueryTasksDto,
+  TaskDto,
+  TaskPaginatedDto,
+} from './dto/task.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import {
   ProjectStatusEnum,
   TaskStatusEnum,
 } from '@app/core/constants/project.enum';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
 
 @Injectable()
 export class ProjectService {
@@ -36,16 +48,21 @@ export class ProjectService {
     auth: UserEntity,
     body: CreateProjectDto,
   ): Promise<ProjectDto> {
-    console.log(33333, auth);
-
     try {
-      const { client, name, status } = body;
+      const { client, name, status, startAt, endAt } = body;
+      const startAtTime = startAt ? new Date(startAt) : null;
+      const endAtTime = endAt ? new Date(endAt) : null;
+      if (startAtTime && endAtTime && startAtTime > endAtTime) {
+        throw new AppBadRequestException(ErrorCode.START_END_TIME_ERROR);
+      }
       const project = await this.projectsRepository.save(
         this.projectsRepository.create({
           client,
           name,
           status,
           owner_id: auth.id,
+          start_at: startAtTime,
+          end_at: endAtTime,
         }),
       );
       return new ProjectDto(project);
@@ -83,6 +100,8 @@ export class ProjectService {
       'project.status as status',
       'project.created_at as created_at',
       'owner.email AS owner_email',
+      'project.start_at as start_at',
+      'project.end_at as end_at',
       'COUNT(task.id) AS task_count',
     ]);
     qb.groupBy('project.id, owner.email');
@@ -146,6 +165,9 @@ export class ProjectService {
       }
       const startAtTime = startAt ? new Date(startAt) : null;
       const endAtTime = endAt ? new Date(endAt) : null;
+      if (startAtTime && endAtTime && startAtTime > endAtTime) {
+        throw new AppBadRequestException(ErrorCode.START_END_TIME_ERROR);
+      }
       const task = await this.tasksRepository.save(
         this.tasksRepository.create({
           project_id: projectId,
@@ -168,24 +190,28 @@ export class ProjectService {
     }
   }
 
-  async getTasks(
-    auth: UserEntity,
-    body: QueryTasksDto,
-  ): Promise<TaskPaginatedDto> {
+  async getTasks(query: QueryTasksDto): Promise<TaskPaginatedDto> {
     try {
-      const { projectId } = body;
+      const { projectId, type, userId } = query;
+      const whereOptions = {
+        project_id: projectId,
+        deleted_at: null,
+      };
+      if (type === GetTaskTypeEnum.SLOW_PROCESS) {
+        whereOptions['end_at'] = LessThan(new Date());
+      }
+      if (userId) {
+        whereOptions['assigned_to'] = userId;
+      }
       const [tasks, total] = await this.tasksRepository.findAndCount({
-        where: {
-          project_id: projectId,
-          deleted_at: null,
-        },
+        where: whereOptions,
         order: {
           created_at: 'ASC',
         },
-        skip: body.skip,
-        take: body.take,
+        skip: query.skip,
+        take: query.take,
       });
-      const meta = new PageMetaDto({ options: body, total });
+      const meta = new PageMetaDto({ options: query, total });
       return new TaskPaginatedDto(
         tasks.map((task) => new TaskDto(task)),
         meta,
@@ -230,7 +256,7 @@ export class ProjectService {
     body: UpdateProjectDto,
   ): Promise<ProjectDto> {
     try {
-      const { projectId, name, status, client } = body;
+      const { projectId, name, status, client, startAt, endAt } = body;
       const project = await this.projectsRepository.findOne({
         where: {
           id: projectId,
@@ -254,6 +280,16 @@ export class ProjectService {
       }
       if (client !== undefined && client !== project.client) {
         project.client = client;
+        needUpdate = true;
+      }
+      const startAtTime = startAt ? new Date(startAt) : null;
+      const endAtTime = endAt ? new Date(endAt) : null;
+      if (startAtTime !== undefined && startAtTime !== project.start_at) {
+        project.start_at = startAtTime;
+        needUpdate = true;
+      }
+      if (endAtTime !== undefined && endAtTime !== project.end_at) {
+        project.end_at = endAtTime;
         needUpdate = true;
       }
       if (needUpdate) {
@@ -295,6 +331,9 @@ export class ProjectService {
       if (status !== undefined && status !== task.status) {
         if (task.status === TaskStatusEnum.COMPLETED) {
           throw new AppBadRequestException(ErrorCode.TASK_COMPLETED);
+        }
+        if (status === TaskStatusEnum.COMPLETED) {
+          task.completed_at = new Date();
         }
         task.status = status;
         needUpdate = true;
@@ -353,7 +392,7 @@ export class ProjectService {
     }
   }
 
-  async getProjectById(auth: UserEntity, projectId: string) {
+  async getProjectById(projectId: string) {
     try {
       const project = await this.projectsRepository.findOne({
         where: {
@@ -364,7 +403,34 @@ export class ProjectService {
       if (!project) {
         throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
       }
-      return new ProjectDto(project);
+      const tasks = await this.tasksRepository.find({
+        where: {
+          project_id: projectId,
+          deleted_at: null,
+        },
+        order: {
+          created_at: 'DESC',
+        },
+      });
+      project.task_count = tasks.length;
+      const startedCount = tasks.filter(
+        (task) => task.status === TaskStatusEnum.STARTED,
+      ).length;
+      const acceptedCount = tasks.filter(
+        (task) => task.status === TaskStatusEnum.ACCEPTED,
+      ).length;
+      const inProgressCount = tasks.filter(
+        (task) => task.status === TaskStatusEnum.IN_PROGRESS,
+      ).length;
+      const completedCount = tasks.filter(
+        (task) => task.status === TaskStatusEnum.COMPLETED,
+      ).length;
+      return new DetailProjectDto(project, {
+        startedCount,
+        acceptedCount,
+        inProgressCount,
+        completedCount,
+      });
     } catch (error) {
       Logger.error('Get project error', error);
       if (error instanceof AppBadRequestException) {
@@ -374,7 +440,7 @@ export class ProjectService {
     }
   }
 
-  async getTaskById(auth: UserEntity, taskId: string) {
+  async getTaskById(taskId: string) {
     try {
       const task = await this.tasksRepository.findOne({
         where: {
@@ -392,6 +458,96 @@ export class ProjectService {
         throw error;
       }
       throw new AppBadRequestException(ErrorCode.GET_TASK_ERROR);
+    }
+  }
+
+  async getDashboard(auth: UserEntity): Promise<DashboardDto> {
+    try {
+      const [projects, tasks, users] = await Promise.all([
+        this.projectsRepository.find({
+          where: {
+            status: ProjectStatusEnum.IN_PROGRESS,
+            deleted_at: null,
+          },
+        }),
+        this.tasksRepository.find({
+          where: {
+            status: In([
+              TaskStatusEnum.ACCEPTED,
+              TaskStatusEnum.IN_PROGRESS,
+              TaskStatusEnum.COMPLETED,
+            ]),
+            deleted_at: null,
+          },
+          order: {
+            created_at: 'DESC',
+          },
+        }),
+        this.usersRepository.find({
+          where: {
+            deleted_at: null,
+            role: In([Role.Employee, Role.Director]),
+            status: StatusAccount.ACTIVE,
+          },
+        }),
+      ]);
+      const openTasksCount = tasks.filter(
+        (task) =>
+          task.status === TaskStatusEnum.ACCEPTED ||
+          task.status === TaskStatusEnum.IN_PROGRESS,
+      ).length;
+      const completeTasksCount = tasks.filter(
+        (task) => task.status === TaskStatusEnum.COMPLETED,
+      ).length;
+      return {
+        runningProjectsCount: projects.length,
+        openTasksCount,
+        completeTasksCount,
+        usersCount: users.length,
+      };
+    } catch (error) {
+      Logger.error('Get dashboard error', error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.GET_DASHBOARD_ERROR);
+    }
+  }
+
+  async getDashboardPercentage(
+    auth: UserEntity,
+  ): Promise<DashboardPercentageDto> {
+    try {
+      const [completedTasks, startedTasksCount] = await Promise.all([
+        this.tasksRepository.find({
+          where: {
+            status: TaskStatusEnum.COMPLETED,
+            deleted_at: null,
+          },
+        }),
+        this.tasksRepository.count({
+          where: {
+            status: TaskStatusEnum.STARTED,
+            deleted_at: null,
+          },
+        }),
+      ]);
+      const rightProcessTasksCount = completedTasks.filter(
+        (task) => task.completed_at <= task.end_at,
+      ).length;
+      const slowProcessTasksCount = completedTasks.filter(
+        (task) => task.completed_at > task.end_at,
+      ).length;
+      return {
+        rightProcessTasksCount,
+        slowProcessTasksCount,
+        startedTasksCount,
+      };
+    } catch (error) {
+      Logger.error('Get dashboard error', error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
     }
   }
 }

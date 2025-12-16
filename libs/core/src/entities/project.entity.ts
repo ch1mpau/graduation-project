@@ -24,6 +24,12 @@ export class ProjectEntity extends WithId(DateEntity) {
   @Column({ type: String, nullable: true })
   type: string;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  start_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  end_at: Date | null;
+
   @OneToMany(() => TaskEntity, (task) => task.project)
   tasks: TaskEntity[];
 

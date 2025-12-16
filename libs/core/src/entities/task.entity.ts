@@ -33,6 +33,9 @@ export class TaskEntity extends WithId(DateEntity) {
   @Column({ type: 'timestamptz', nullable: true })
   end_at: Date | null;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  completed_at: Date | null;
+
   @ManyToOne(() => ProjectEntity, (project) => project.tasks, {
     onDelete: 'NO ACTION',
     onUpdate: 'NO ACTION',

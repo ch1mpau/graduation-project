@@ -29,6 +29,7 @@ import { QueryTasksDto, TaskDto, TaskPaginatedDto } from './dto/task.dto';
 import { RequireDirector, RequireEmployee } from '@app/core';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
 
 @ApiTags('Project')
 @Controller({
@@ -62,11 +63,8 @@ export class ProjectController {
   @Get('detail/:id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getDetailProject(
-    @AuthUser() auth: UserEntity,
-    @Param('id') id: string,
-  ): Promise<ProjectDto> {
-    return await this.projectService.getProjectById(auth, id);
+  async getDetailProject(@Param('id') id: string): Promise<ProjectDto> {
+    return await this.projectService.getProjectById(id);
   }
 
   @Delete(':id')
@@ -102,23 +100,15 @@ export class ProjectController {
   }
 
   @Get('task')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getTasks(
-    @AuthUser() auth: UserEntity,
-    @Query() query: QueryTasksDto,
-  ): Promise<TaskPaginatedDto> {
-    return await this.projectService.getTasks(auth, query);
+  async getTasks(@Query() query: QueryTasksDto): Promise<TaskPaginatedDto> {
+    return await this.projectService.getTasks(query);
   }
 
   @Get('task/detail/:id')
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getDetailTask(
-    @AuthUser() auth: UserEntity,
-    @Param('id') id: string,
-  ): Promise<TaskDto> {
-    return await this.projectService.getTaskById(auth, id);
+  async getDetailTask(@Param('id') id: string): Promise<TaskDto> {
+    return await this.projectService.getTaskById(id);
   }
 
   @Put('task')
@@ -129,5 +119,21 @@ export class ProjectController {
     @Body() body: UpdateTaskDto,
   ): Promise<TaskDto> {
     return await this.projectService.updateTask(auth, body);
+  }
+
+  @Get('dashboard')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getDashboard(@AuthUser() auth: UserEntity): Promise<DashboardDto> {
+    return await this.projectService.getDashboard(auth);
+  }
+
+  @Get('dashboard/percentage')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getDashboardPercentage(
+    @AuthUser() auth: UserEntity,
+  ): Promise<DashboardPercentageDto> {
+    return await this.projectService.getDashboardPercentage(auth);
   }
 }

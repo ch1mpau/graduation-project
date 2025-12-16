@@ -27,6 +27,8 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.UPDATE_TASK_ERROR]: 'Update Task Error',
   [ErrorCode.TASK_NOT_FOUND]: 'Task Not Found',
   [ErrorCode.TASK_COMPLETED]: 'Task already Completed',
+  [ErrorCode.GET_DASHBOARD_ERROR]: 'Get Dashboard Error',
+  [ErrorCode.GET_EMPLOYEES_ERROR]: 'Get Employees Error',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {
