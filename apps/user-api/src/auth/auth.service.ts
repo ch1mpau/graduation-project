@@ -101,7 +101,7 @@ export class AuthService {
         }),
       );
     } catch (error) {
-      Logger.error('Create account error', error);
+      Logger.error('Create account error' + error);
       if (
         error instanceof AppBadRequestException ||
         error instanceof AppUnAuthorizedException

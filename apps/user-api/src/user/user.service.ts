@@ -63,7 +63,7 @@ export class UserService {
         meta,
       );
     } catch (error) {
-      Logger.error('Get employees error', error);
+      Logger.error('Get employees error' + error);
       throw new AppBadRequestException(ErrorCode.GET_EMPLOYEES_ERROR);
     }
   }
@@ -75,7 +75,7 @@ export class UserService {
       });
       return new UserDto(user);
     } catch (error) {
-      Logger.error('Get me error', error);
+      Logger.error('Get me error' + error);
       throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
     }
   }

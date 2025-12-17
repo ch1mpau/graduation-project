@@ -67,7 +67,7 @@ export class ProjectService {
       );
       return new ProjectDto(project);
     } catch (error) {
-      Logger.error('Create project error', error);
+      Logger.error('Create project error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -182,7 +182,7 @@ export class ProjectService {
       );
       return new TaskDto(task);
     } catch (error) {
-      Logger.error('Create task error', error);
+      Logger.error('Create task error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -217,7 +217,7 @@ export class ProjectService {
         meta,
       );
     } catch (error) {
-      Logger.error('Get tasks error', error);
+      Logger.error('Get tasks error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -243,7 +243,7 @@ export class ProjectService {
       await this.tasksRepository.softDelete({ project_id: id });
       return;
     } catch (error) {
-      Logger.error('Delete project error', error);
+      Logger.error('Delete project error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -297,7 +297,7 @@ export class ProjectService {
       }
       return new ProjectDto(project);
     } catch (error) {
-      Logger.error('Update project error', error);
+      Logger.error('Update project error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       } else {
@@ -383,7 +383,7 @@ export class ProjectService {
       }
       return new TaskDto(task);
     } catch (error) {
-      Logger.error('Update task error', error);
+      Logger.error('Update task error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       } else {
@@ -432,7 +432,7 @@ export class ProjectService {
         completedCount,
       });
     } catch (error) {
-      Logger.error('Get project error', error);
+      Logger.error('Get project error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -453,7 +453,7 @@ export class ProjectService {
       }
       return new TaskDto(task);
     } catch (error) {
-      Logger.error('Get task error', error);
+      Logger.error('Get task error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -506,7 +506,7 @@ export class ProjectService {
         usersCount: users.length,
       };
     } catch (error) {
-      Logger.error('Get dashboard error', error);
+      Logger.error('Get dashboard error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }
@@ -544,7 +544,7 @@ export class ProjectService {
         startedTasksCount,
       };
     } catch (error) {
-      Logger.error('Get dashboard error', error);
+      Logger.error('Get dashboard error' + error);
       if (error instanceof AppBadRequestException) {
         throw error;
       }

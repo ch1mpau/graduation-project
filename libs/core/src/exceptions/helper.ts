@@ -29,6 +29,7 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.TASK_COMPLETED]: 'Task already Completed',
   [ErrorCode.GET_DASHBOARD_ERROR]: 'Get Dashboard Error',
   [ErrorCode.GET_EMPLOYEES_ERROR]: 'Get Employees Error',
+  [ErrorCode.START_END_TIME_ERROR]: 'Start time must be less than end time',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {
