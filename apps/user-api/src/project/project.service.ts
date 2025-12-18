@@ -32,6 +32,8 @@ import {
 } from '@app/core/constants/project.enum';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
+import { UploadProjectFilesDto } from './dto/upload-prj-file.dto';
+import { FileEntity } from '@app/core/entities/image.entity';
 
 @Injectable()
 export class ProjectService {
@@ -42,6 +44,8 @@ export class ProjectService {
     private projectsRepository: Repository<ProjectEntity>,
     @InjectRepository(TaskEntity)
     private tasksRepository: Repository<TaskEntity>,
+    @InjectRepository(FileEntity)
+    private filesRepository: Repository<FileEntity>,
   ) {}
 
   async createProject(
@@ -451,7 +455,15 @@ export class ProjectService {
       if (!task) {
         throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
       }
-      return new TaskDto(task);
+      const files = await this.filesRepository.find({
+        where: {
+          task_id: taskId,
+          deleted_at: null,
+        },
+      });
+      console.log(343333, files);
+
+      return new TaskDto(task, files);
     } catch (error) {
       Logger.error('Get task error' + error);
       if (error instanceof AppBadRequestException) {
@@ -548,6 +560,59 @@ export class ProjectService {
       if (error instanceof AppBadRequestException) {
         throw error;
       }
+    }
+  }
+
+  async uploadProjectFiles(
+    auth: UserEntity,
+    body: UploadProjectFilesDto,
+  ): Promise<any> {
+    try {
+      const { projectId, taskId, fileIds } = body;
+      const files = await this.filesRepository.find({
+        where: {
+          id: In(fileIds),
+          deleted_at: null,
+        },
+      });
+      if (!files || !files.length) {
+        throw new AppBadRequestException(ErrorCode.FILE_NOT_FOUND);
+      }
+      if (!!taskId) {
+        const task = await this.tasksRepository.findOne({
+          where: {
+            id: taskId,
+            deleted_at: null,
+          },
+        });
+        if (!task) {
+          throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
+        }
+      }
+      if (!!projectId) {
+        const project = await this.projectsRepository.findOne({
+          where: {
+            id: projectId,
+            deleted_at: null,
+          },
+        });
+        if (!project) {
+          throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+      }
+      await Promise.all(
+        files.map((file) => {
+          file.task_id = taskId;
+          file.project_id = projectId;
+          return this.filesRepository.save(file);
+        }),
+      );
+    } catch (error) {
+      Logger.error('Upload project files error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.UPLOAD_PROJECT_FILES_ERROR);
     }
   }
 }

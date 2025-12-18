@@ -30,6 +30,7 @@ import { RequireDirector, RequireEmployee } from '@app/core';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
+import { UploadProjectFilesDto } from './dto/upload-prj-file.dto';
 
 @ApiTags('Project')
 @Controller({
@@ -135,5 +136,15 @@ export class ProjectController {
     @AuthUser() auth: UserEntity,
   ): Promise<DashboardPercentageDto> {
     return await this.projectService.getDashboardPercentage(auth);
+  }
+
+  @Post('files')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async uploadFileProject(
+    @AuthUser() auth: UserEntity,
+    @Body() body: UploadProjectFilesDto,
+  ): Promise<any> {
+    return await this.projectService.uploadProjectFiles(auth, body);
   }
 }

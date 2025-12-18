@@ -30,6 +30,10 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.GET_DASHBOARD_ERROR]: 'Get Dashboard Error',
   [ErrorCode.GET_EMPLOYEES_ERROR]: 'Get Employees Error',
   [ErrorCode.START_END_TIME_ERROR]: 'Start time must be less than end time',
+  [ErrorCode.UPDATE_USER_ERROR]: 'Update User Error',
+  [ErrorCode.UPLOAD_IMAGE_ERROR]: 'Upload Image Error',
+  [ErrorCode.FILE_NOT_FOUND]: 'File Not Found',
+  [ErrorCode.UPLOAD_PROJECT_FILES_ERROR]: 'Upload Project Files Error',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {

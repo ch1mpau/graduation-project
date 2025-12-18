@@ -10,12 +10,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@app/core/entities/user.entity';
 import { QueryEmployeesDto, UserDto, UserPaginatedDto } from './dto/user.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
+import { FileEntity } from '@app/core/entities/image.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
+    @InjectRepository(FileEntity)
+    private filesRepository: Repository<FileEntity>,
   ) {}
 
   async getEmployees(
@@ -73,10 +77,74 @@ export class UserService {
       const user = await this.usersRepository.findOne({
         where: { id: auth.id, deleted_at: null, status: StatusAccount.ACTIVE },
       });
+      if (!user) {
+        throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
+      }
+      if (!!user?.avatar_id) {
+        const avatar = await this.filesRepository.findOne({
+          where: {
+            id: user.avatar_id,
+            deleted_at: null,
+          },
+        });
+        return new UserDto(user, avatar);
+      }
       return new UserDto(user);
     } catch (error) {
       Logger.error('Get me error' + error);
       throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
+    }
+  }
+
+  async updateMe(auth: UserEntity, body: UpdateMeDto): Promise<UserDto> {
+    try {
+      const { name, phoneNumber, password, avatarId } = body;
+      const user = await this.usersRepository.findOne({
+        where: {
+          id: auth.id,
+          deleted_at: null,
+        },
+      });
+      if (!user) {
+        throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
+      }
+      let needUpdate = false;
+      let avatar = null;
+      if (name !== undefined && name !== user.name) {
+        user.name = name;
+        needUpdate = true;
+      }
+      if (phoneNumber !== undefined && phoneNumber !== user.phone_number) {
+        user.phone_number = phoneNumber;
+        needUpdate = true;
+      }
+      if (password !== undefined && password !== user.password) {
+        user.password = password;
+        needUpdate = true;
+      }
+      if (avatarId !== undefined && avatarId !== user.avatar_id) {
+        avatar = await this.filesRepository.findOne({
+          where: {
+            id: avatarId,
+            deleted_at: null,
+          },
+        });
+        if (avatar) {
+          user.avatar_id = avatarId;
+          needUpdate = true;
+        }
+      }
+      if (needUpdate) {
+        await this.usersRepository.save(user);
+      }
+      return new UserDto(user, avatar);
+    } catch (error) {
+      Logger.error('Update user error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      } else {
+        throw new AppBadRequestException(ErrorCode.UPDATE_TASK_ERROR);
+      }
     }
   }
 }

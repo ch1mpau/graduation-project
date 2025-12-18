@@ -1,7 +1,9 @@
 import { PageQueryDto, Paginate } from '@app/core';
 import { TaskStatusEnum } from '@app/core/constants/project.enum';
+import { FileEntity } from '@app/core/entities/image.entity';
 import { TaskEntity } from '@app/core/entities/task.entity';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { FIleDto } from '../../file/dto/file.dto';
 
 export enum GetTaskTypeEnum {
   SLOW_PROCESS = 'SLOW_PROCESS',
@@ -20,7 +22,8 @@ export class TaskDto {
   projectId: string;
   createdAt: number;
   completedAt: number;
-  constructor(task: TaskEntity) {
+  files?: FIleDto[];
+  constructor(task: TaskEntity, files?: FileEntity[]) {
     this.id = task.id;
     this.name = task.name;
     this.status = task.status;
@@ -33,6 +36,7 @@ export class TaskDto {
     this.endAt = task.end_at ? task.end_at.getTime() : null;
     this.createdAt = task.created_at.getTime();
     this.completedAt = task.completed_at ? task.completed_at.getTime() : null;
+    this.files = files && files.map((file) => new FIleDto(file));
   }
 }
 

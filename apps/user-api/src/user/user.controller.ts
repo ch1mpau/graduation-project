@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -14,6 +16,7 @@ import { UserEntity } from '@app/core/entities/user.entity';
 import { JwtAuthGuard } from '../auth/gaurds/jwt.guard';
 import { AuthUser } from '@app/core/decorators/auth-user.decorator';
 import { QueryEmployeesDto, UserDto } from './dto/user.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @ApiTags('User')
 @Controller({
@@ -39,5 +42,15 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async getMe(@AuthUser() auth: UserEntity): Promise<UserDto> {
     return await this.userService.getMe(auth);
+  }
+
+  @Put('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateMe(
+    @AuthUser() auth: UserEntity,
+    @Body() body: UpdateMeDto,
+  ): Promise<UserDto> {
+    return await this.userService.updateMe(auth, body);
   }
 }

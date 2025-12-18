@@ -29,6 +29,9 @@ export class UserEntity extends WithId(DateEntity) {
   @Column({ type: String, nullable: true })
   status: StatusAccount;
 
+  @Column({ type: String, nullable: true, default: null })
+  avatar_id: string | null;
+
   @Column('jsonb', { nullable: true })
   additional_data: any;
 

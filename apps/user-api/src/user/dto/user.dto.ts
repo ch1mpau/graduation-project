@@ -1,8 +1,10 @@
 import { PageQueryDto, Paginate, Role } from '@app/core';
 import { StatusAccount } from '@app/core/constants/status-account';
+import { FileEntity } from '@app/core/entities/image.entity';
 import { UserEntity } from '@app/core/entities/user.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { FIleDto } from '../../file/dto/file.dto';
 
 export class UserDto {
   id: string;
@@ -11,13 +13,15 @@ export class UserDto {
   role: Role;
   status: StatusAccount;
   name: string;
-  constructor(user: UserEntity) {
+  avatar: FIleDto | null;
+  constructor(user: UserEntity, avatar?: FileEntity | null) {
     this.id = user.id;
     this.email = user.email;
     this.phoneNumber = user.phone_number;
     this.role = user.role;
     this.status = user.status;
     this.name = user.name;
+    this.avatar = avatar ? new FIleDto(avatar) : null;
   }
 }
 

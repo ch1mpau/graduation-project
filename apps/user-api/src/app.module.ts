@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 import { UserModule } from './user/user.module';
 import { ProjectModule } from './project/project.module';
+import { FileModule } from './file/file.module';
 dotenv.config();
 
 @Module({
@@ -20,6 +21,7 @@ dotenv.config();
     AuthModule,
     UserModule,
     ProjectModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
