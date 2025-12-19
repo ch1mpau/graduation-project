@@ -36,7 +36,7 @@ export class FileService {
       const filesCreated = await Promise.all(
         files.map(async (file) => {
           const newFile = this.filesRepository.create({
-            path: file.filename,
+            path: 'uploads/' + file.filename,
             type: FileType.IMAGE,
           });
           return await this.filesRepository.save(newFile);
