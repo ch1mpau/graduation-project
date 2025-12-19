@@ -4,7 +4,7 @@ import { FileEntity } from '@app/core/entities/image.entity';
 import { UserEntity } from '@app/core/entities/user.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { FIleDto } from '../../file/dto/file.dto';
+import { FileDto } from '../../file/dto/file.dto';
 
 export class UserDto {
   id: string;
@@ -13,7 +13,7 @@ export class UserDto {
   role: Role;
   status: StatusAccount;
   name: string;
-  avatar: FIleDto | null;
+  avatar: FileDto | null;
   constructor(user: UserEntity, avatar?: FileEntity | null) {
     this.id = user.id;
     this.email = user.email;
@@ -21,7 +21,7 @@ export class UserDto {
     this.role = user.role;
     this.status = user.status;
     this.name = user.name;
-    this.avatar = avatar ? new FIleDto(avatar) : null;
+    this.avatar = avatar ? new FileDto(avatar) : null;
   }
 }
 

@@ -4,7 +4,7 @@ import { FileEntity } from '@app/core/entities/image.entity';
 import { Get, Injectable, Logger, Param, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FIleDto } from './dto/file.dto';
+import { FileDto } from './dto/file.dto';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { Response } from 'express';
@@ -42,7 +42,7 @@ export class FileService {
           return await this.filesRepository.save(newFile);
         }),
       );
-      return filesCreated.map((file) => new FIleDto(file));
+      return filesCreated.map((file) => new FileDto(file));
     } catch (error) {
       Logger.error('Create file error' + error);
       if (error instanceof AppBadRequestException) {

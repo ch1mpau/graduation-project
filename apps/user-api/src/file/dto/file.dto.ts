@@ -1,7 +1,7 @@
 import { FileType } from '@app/core/constants/file.enum';
 import { FileEntity } from '@app/core/entities/image.entity';
 
-export class FIleDto {
+export class FileDto {
   id: string;
   type: FileType;
   projectId: string;

@@ -7,7 +7,7 @@ import {
 import { StatusAccount } from '@app/core/constants/status-account';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, Repository } from 'typeorm';
+import { In, LessThan, Not, Repository } from 'typeorm';
 import { UserEntity } from '@app/core/entities/user.entity';
 import {
   DetailProjectDto,
@@ -46,7 +46,7 @@ export class ProjectService {
     private tasksRepository: Repository<TaskEntity>,
     @InjectRepository(FileEntity)
     private filesRepository: Repository<FileEntity>,
-  ) { }
+  ) {}
 
   async createProject(
     auth: UserEntity,
@@ -144,6 +144,7 @@ export class ProjectService {
         assignedTo,
         startAt,
         endAt,
+        priority,
       } = body;
       const project = await this.projectsRepository.findOne({
         where: {
@@ -153,6 +154,9 @@ export class ProjectService {
       });
       if (!project) {
         throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
+      }
+      if (project.status === ProjectStatusEnum.COMPLETED) {
+        throw new AppBadRequestException(ErrorCode.TASK_COMPLETED);
       }
       let assignedUserId = assignedTo;
       if (!!assignedTo) {
@@ -182,6 +186,7 @@ export class ProjectService {
           assigned_to: assignedUserId,
           start_at: startAtTime,
           end_at: endAtTime,
+          priority,
         }),
       );
       return new TaskDto(task);
@@ -203,9 +208,11 @@ export class ProjectService {
       };
       if (type === GetTaskTypeEnum.SLOW_PROCESS) {
         whereOptions['end_at'] = LessThan(new Date());
+        whereOptions['status'] = Not(TaskStatusEnum.COMPLETED);
       }
       if (userId) {
         whereOptions['assigned_to'] = userId;
+        whereOptions['status'] = Not(TaskStatusEnum.COMPLETED);
       }
       const [tasks, total] = await this.tasksRepository.findAndCount({
         where: whereOptions,
@@ -275,9 +282,13 @@ export class ProjectService {
         project.name = name;
         needUpdate = true;
       }
+      let updateTaskCompleted = false;
       if (status !== undefined && status !== project.status) {
         if (project.status === ProjectStatusEnum.COMPLETED) {
           throw new AppBadRequestException(ErrorCode.PROJECT_COMPLETED);
+        }
+        if (status === ProjectStatusEnum.COMPLETED) {
+          updateTaskCompleted = true;
         }
         project.status = status;
         needUpdate = true;
@@ -298,6 +309,15 @@ export class ProjectService {
       }
       if (needUpdate) {
         await this.projectsRepository.save(project);
+        if (!!updateTaskCompleted) {
+          await this.tasksRepository.update(
+            { project_id: projectId },
+            {
+              status: TaskStatusEnum.COMPLETED as any,
+              completed_at: () => 'NOW()',
+            },
+          );
+        }
       }
       return new ProjectDto(project);
     } catch (error) {
