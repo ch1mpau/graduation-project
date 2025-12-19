@@ -46,7 +46,7 @@ export class ProjectService {
     private tasksRepository: Repository<TaskEntity>,
     @InjectRepository(FileEntity)
     private filesRepository: Repository<FileEntity>,
-  ) {}
+  ) { }
 
   async createProject(
     auth: UserEntity,
@@ -286,8 +286,8 @@ export class ProjectService {
         project.client = client;
         needUpdate = true;
       }
-      const startAtTime = startAt ? new Date(startAt) : null;
-      const endAtTime = endAt ? new Date(endAt) : null;
+      const startAtTime = startAt ? new Date(startAt) : undefined;
+      const endAtTime = endAt ? new Date(endAt) : undefined;
       if (startAtTime !== undefined && startAtTime !== project.start_at) {
         project.start_at = startAtTime;
         needUpdate = true;
@@ -372,8 +372,8 @@ export class ProjectService {
         task.priority = priority;
         needUpdate = true;
       }
-      const startAtTime = startAt ? new Date(startAt) : null;
-      const endAtTime = endAt ? new Date(endAt) : null;
+      const startAtTime = startAt ? new Date(startAt) : undefined;
+      const endAtTime = endAt ? new Date(endAt) : undefined;
       if (startAtTime !== undefined && startAtTime !== task.start_at) {
         task.start_at = startAtTime;
         needUpdate = true;
