@@ -4,6 +4,7 @@ import { WithId } from './with-id.entity';
 import { ProjectStatusEnum } from '../constants/project.enum';
 import { TaskEntity } from './task.entity';
 import { UserEntity } from './user.entity';
+import { ProjectCustomerEntity } from './project-customer.entity';
 
 @Entity({
   name: 'project',
@@ -14,9 +15,6 @@ export class ProjectEntity extends WithId(DateEntity) {
 
   @Column({ type: String, nullable: true, default: null })
   name: string | null;
-
-  @Column({ type: String, nullable: true })
-  client: string;
 
   @Column({ type: String, nullable: true })
   status: ProjectStatusEnum;
@@ -39,4 +37,7 @@ export class ProjectEntity extends WithId(DateEntity) {
   })
   @JoinColumn([{ name: 'owner_id', referencedColumnName: 'id' }])
   user: UserEntity;
+
+  @OneToMany(() => ProjectCustomerEntity, (pc) => pc.project)
+  customers: ProjectCustomerEntity[];
 }

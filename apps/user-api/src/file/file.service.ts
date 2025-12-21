@@ -29,7 +29,7 @@ export class FileService {
 
   async uploadImages(files: Express.Multer.File[]): Promise<any> {
     try {
-      if (!files.length) {
+      if (!files?.length) {
         console.log('No file uploads');
         return [];
       }
@@ -48,7 +48,7 @@ export class FileService {
       if (error instanceof AppBadRequestException) {
         throw error;
       }
-      throw new AppBadRequestException(ErrorCode.CREATE_PROJECT_ERROR);
+      throw new AppBadRequestException(ErrorCode.UPLOAD_FILE_ERROR);
     }
   }
 }

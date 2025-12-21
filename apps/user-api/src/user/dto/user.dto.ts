@@ -14,6 +14,7 @@ export class UserDto {
   status: StatusAccount;
   name: string;
   avatar: FileDto | null;
+  avatar_id: string;
   constructor(user: UserEntity, avatar?: FileEntity | null) {
     this.id = user.id;
     this.email = user.email;
@@ -21,7 +22,12 @@ export class UserDto {
     this.role = user.role;
     this.status = user.status;
     this.name = user.name;
-    this.avatar = avatar ? new FileDto(avatar) : null;
+    this.avatar_id = user.avatar_id;
+    this.avatar = !!user?.avatar
+      ? new FileDto(user.avatar)
+      : avatar
+        ? new FileDto(avatar)
+        : null;
   }
 }
 

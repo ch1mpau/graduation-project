@@ -32,6 +32,7 @@ export class AuthService {
         status: StatusAccount.ACTIVE,
         deleted_at: null,
       },
+      relations: ['avatar'],
     });
 
     if (!user) {
@@ -79,7 +80,7 @@ export class AuthService {
 
   async createAccount(data: CreateAccountDto): Promise<any> {
     try {
-      const { email, password, name, phoneNumber } = data;
+      const { email, password, name, phoneNumber, role } = data;
       const user = await this.usersRepository.findOne({
         where: {
           email,
@@ -95,7 +96,7 @@ export class AuthService {
           email,
           password,
           status: StatusAccount.ACTIVE,
-          role: Role.Employee,
+          role,
           name,
           phone_number: phoneNumber,
         }),

@@ -34,6 +34,8 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
 import { UploadProjectFilesDto } from './dto/upload-prj-file.dto';
 import { FileEntity } from '@app/core/entities/image.entity';
+import { UserTaskEntity } from '@app/core/entities/task-user.entity';
+import { ProjectCustomerEntity } from '@app/core/entities/project-customer.entity';
 
 @Injectable()
 export class ProjectService {
@@ -46,6 +48,10 @@ export class ProjectService {
     private tasksRepository: Repository<TaskEntity>,
     @InjectRepository(FileEntity)
     private filesRepository: Repository<FileEntity>,
+    @InjectRepository(UserTaskEntity)
+    private userTaskRepository: Repository<UserTaskEntity>,
+    @InjectRepository(ProjectCustomerEntity)
+    private projectCustomerRepository: Repository<ProjectCustomerEntity>,
   ) {}
 
   async createProject(
@@ -53,7 +59,7 @@ export class ProjectService {
     body: CreateProjectDto,
   ): Promise<ProjectDto> {
     try {
-      const { client, name, status, startAt, endAt } = body;
+      const { name, status, startAt, endAt } = body;
       const startAtTime = startAt ? new Date(startAt) : null;
       const endAtTime = endAt ? new Date(endAt) : null;
       if (startAtTime && endAtTime && startAtTime > endAtTime) {
@@ -61,7 +67,6 @@ export class ProjectService {
       }
       const project = await this.projectsRepository.save(
         this.projectsRepository.create({
-          client,
           name,
           status,
           owner_id: auth.id,
@@ -141,10 +146,10 @@ export class ProjectService {
         name,
         status,
         description,
-        assignedTo,
         startAt,
         endAt,
         priority,
+        assignedUsers,
       } = body;
       const project = await this.projectsRepository.findOne({
         where: {
@@ -158,18 +163,16 @@ export class ProjectService {
       if (project.status === ProjectStatusEnum.COMPLETED) {
         throw new AppBadRequestException(ErrorCode.TASK_COMPLETED);
       }
-      let assignedUserId = assignedTo;
-      if (!!assignedTo) {
-        const assignedUser = await this.usersRepository.findOne({
+      let userIds = [];
+      if (!!assignedUsers?.length) {
+        const users = await this.usersRepository.find({
           where: {
-            id: assignedTo,
+            id: In(assignedUsers),
             deleted_at: null,
             status: StatusAccount.ACTIVE,
           },
         });
-        if (!assignedUser) {
-          assignedUserId = null;
-        }
+        userIds = users.map((user) => user.id);
       }
       const startAtTime = startAt ? new Date(startAt) : null;
       const endAtTime = endAt ? new Date(endAt) : null;
@@ -183,12 +186,30 @@ export class ProjectService {
           status,
           owner_id: auth.id,
           description,
-          assigned_to: assignedUserId,
           start_at: startAtTime,
           end_at: endAtTime,
           priority,
         }),
       );
+      if (userIds.length > 0) {
+        const userTasks = await Promise.all(
+          userIds.map((userId) =>
+            this.userTaskRepository.save(
+              this.userTaskRepository.create({
+                user_id: userId,
+                task_id: task.id,
+              }),
+            ),
+          ),
+        );
+        task.userTasks = await this.userTaskRepository.find({
+          where: {
+            task_id: task.id,
+          },
+          relations: ['user'],
+        });
+      }
+
       return new TaskDto(task);
     } catch (error) {
       Logger.error('Create task error' + error);
@@ -338,7 +359,7 @@ export class ProjectService {
         priority,
         status,
         description,
-        assignedTo,
+        assignedUsers,
         startAt,
         endAt,
       } = body;
@@ -347,7 +368,10 @@ export class ProjectService {
           id: taskId,
           deleted_at: null,
         },
+        relations: ['userTasks'],
       });
+      console.log(44444, task);
+
       if (!task) {
         throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
       }
@@ -362,20 +386,44 @@ export class ProjectService {
         task.status = status;
         needUpdate = true;
       }
-      let assignedUserId = assignedTo;
-      if (!!assignedTo && assignedTo !== task.assigned_to) {
-        const assignedUser = await this.usersRepository.findOne({
-          where: {
-            id: assignedTo,
-            deleted_at: null,
-            status: StatusAccount.ACTIVE,
-          },
-        });
-        if (!assignedUser) {
-          throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
+
+      if (Array.isArray(assignedUsers)) {
+        const existedUserIds = task.userTasks.map((ut) => ut.user_id);
+
+        const toCreate = assignedUsers.filter(
+          (id) => !existedUserIds.includes(id),
+        );
+
+        const toDelete = existedUserIds.filter(
+          (id) => !assignedUsers.includes(id),
+        );
+
+        if (toCreate.length > 0) {
+          const newUserTasks = toCreate.map((userId) =>
+            this.userTaskRepository.create({
+              task_id: task.id,
+              user_id: userId,
+            }),
+          );
+
+          const savedUserTasks =
+            await this.userTaskRepository.save(newUserTasks);
+          task.userTasks.push(...savedUserTasks);
         }
-        assignedUserId = assignedUser.id;
+
+        if (toDelete.length > 0) {
+          await this.userTaskRepository.softDelete({
+            task_id: task.id,
+            user_id: In(toDelete),
+          });
+
+          task.userTasks = task.userTasks.filter(
+            (ut) => !toDelete.includes(ut.user_id),
+          );
+        }
+        needUpdate = true;
       }
+
       if (name !== undefined && name !== task.name) {
         task.name = name;
         needUpdate = true;
@@ -384,10 +432,7 @@ export class ProjectService {
         task.description = description;
         needUpdate = true;
       }
-      if (assignedUserId !== undefined && assignedUserId !== task.assigned_to) {
-        task.assigned_to = assignedUserId;
-        needUpdate = true;
-      }
+
       if (priority !== undefined && priority !== task.priority) {
         task.priority = priority;
         needUpdate = true;
@@ -405,6 +450,16 @@ export class ProjectService {
       if (needUpdate) {
         await this.tasksRepository.save(task);
       }
+      if (!!task.userTasks && task.userTasks.length > 0) {
+        const userTasks = await this.userTaskRepository.find({
+          where: {
+            task_id: task.id,
+            deleted_at: null,
+          },
+          relations: ['user'],
+        });
+        task.userTasks = userTasks;
+      }
       return new TaskDto(task);
     } catch (error) {
       Logger.error('Update task error' + error);
@@ -418,12 +473,14 @@ export class ProjectService {
 
   async getProjectById(projectId: string) {
     try {
-      const project = await this.projectsRepository.findOne({
-        where: {
-          id: projectId,
-          deleted_at: null,
-        },
-      });
+      const project = await this.projectsRepository
+        .createQueryBuilder('project')
+        .leftJoinAndSelect('project.user', 'user')
+        .leftJoinAndSelect('user.avatar', 'avatar')
+        .where('project.id = :projectId', { projectId })
+        .andWhere('project.deleted_at IS NULL')
+        .getOne();
+
       if (!project) {
         throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
       }
@@ -471,6 +528,11 @@ export class ProjectService {
           id: taskId,
           deleted_at: null,
         },
+        relations: {
+          userTasks: {
+            user: true,
+          },
+        },
       });
       if (!task) {
         throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
@@ -481,8 +543,6 @@ export class ProjectService {
           deleted_at: null,
         },
       });
-      console.log(343333, files);
-
       return new TaskDto(task, files);
     } catch (error) {
       Logger.error('Get task error' + error);

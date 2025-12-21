@@ -19,7 +19,7 @@ export class CreateProjectDto {
 
   @IsEnum(ProjectStatusEnum)
   @IsOptional()
-  status: ProjectStatusEnum = ProjectStatusEnum.PENDING;
+  status: ProjectStatusEnum = ProjectStatusEnum.START;
 
   @IsOptional()
   @Type(() => Number)

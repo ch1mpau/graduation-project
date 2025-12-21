@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Role } from '@app/core';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateAccountDto {
   @IsString()
@@ -17,4 +24,8 @@ export class CreateAccountDto {
   @IsString()
   @IsOptional()
   phoneNumber: string;
+
+  @IsEnum(Role)
+  @IsNotEmpty()
+  role: Role;
 }

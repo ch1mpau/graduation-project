@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DateEntity } from './with-date.entity';
 import { TaskPriorityEnum, TaskStatusEnum } from '../constants/project.enum';
 import { WithId } from './with-id.entity';
 import { ProjectEntity } from './project.entity';
 import { UserEntity } from './user.entity';
+import { UserTaskEntity } from './task-user.entity';
 
 @Entity({
   name: 'task',
@@ -23,9 +24,6 @@ export class TaskEntity extends WithId(DateEntity) {
 
   @Column({ type: String, nullable: true })
   project_id: string;
-
-  @Column({ type: String, nullable: true, default: null })
-  assigned_to: string;
 
   @Column({ type: 'timestamptz', nullable: true })
   start_at: Date | null;
@@ -49,4 +47,7 @@ export class TaskEntity extends WithId(DateEntity) {
   })
   @JoinColumn([{ name: 'user_id', referencedColumnName: 'id' }])
   user: UserEntity;
+
+  @OneToMany(() => UserTaskEntity, (ut) => ut.task)
+  userTasks: UserTaskEntity[];
 }

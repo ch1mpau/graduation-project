@@ -104,6 +104,7 @@ export class UserService {
           id: auth.id,
           deleted_at: null,
         },
+        relations: ['avatar'],
       });
       if (!user) {
         throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);

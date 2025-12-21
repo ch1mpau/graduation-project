@@ -1,10 +1,20 @@
-import { Column, Entity, Index, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { DateEntity } from './with-date.entity';
 import { WithId } from './with-id.entity';
 import { Role } from '../constants';
 import { StatusAccount } from '../constants/status-account';
 import { TaskEntity } from './task.entity';
 import { ProjectEntity } from './project.entity';
+import { FileEntity } from './image.entity';
+import { ProjectCustomerEntity } from './project-customer.entity';
+import { UserTaskEntity } from './task-user.entity';
 
 @Entity({
   name: 'user',
@@ -30,7 +40,7 @@ export class UserEntity extends WithId(DateEntity) {
   status: StatusAccount;
 
   @Column({ type: String, nullable: true, default: null })
-  avatar_id: string | null;
+  avatar_id: string;
 
   @Column('jsonb', { nullable: true })
   additional_data: any;
@@ -40,4 +50,14 @@ export class UserEntity extends WithId(DateEntity) {
 
   @OneToMany(() => TaskEntity, (task) => task.user)
   tasks: TaskEntity[];
+
+  @OneToOne(() => FileEntity, (file) => file.user)
+  @JoinColumn([{ name: 'avatar_id', referencedColumnName: 'id' }])
+  avatar: FileEntity;
+
+  @OneToMany(() => ProjectCustomerEntity, (pc) => pc.user)
+  projectCustomers: ProjectCustomerEntity[];
+
+  @OneToMany(() => UserTaskEntity, (ut) => ut.user)
+  userTasks: UserTaskEntity[];
 }

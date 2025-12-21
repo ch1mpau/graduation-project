@@ -4,6 +4,7 @@ import {
 } from '@app/core/constants/project.enum';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -33,9 +34,10 @@ export class CreateTaskDto {
   @IsNotEmpty()
   projectId: string;
 
-  @IsUUID()
   @IsOptional()
-  assignedTo: string;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  assignedUsers: string[];
 
   @IsOptional()
   @Type(() => Number)

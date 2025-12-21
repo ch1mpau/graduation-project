@@ -4,6 +4,7 @@ import { FileEntity } from '@app/core/entities/image.entity';
 import { TaskEntity } from '@app/core/entities/task.entity';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { FileDto } from '../../file/dto/file.dto';
+import { UserDto } from '../../user/dto/user.dto';
 
 export enum GetTaskTypeEnum {
   SLOW_PROCESS = 'SLOW_PROCESS',
@@ -16,13 +17,14 @@ export class TaskDto {
   ownerId: string;
   description: string;
   priority: string;
-  assignedTo: string;
+  assignedUsers: UserDto[];
   startAt: number;
   endAt: number;
   projectId: string;
   createdAt: number;
   completedAt: number;
   files?: FileDto[];
+
   constructor(task: TaskEntity, files?: FileEntity[]) {
     this.id = task.id;
     this.name = task.name;
@@ -30,12 +32,14 @@ export class TaskDto {
     this.priority = task.priority;
     this.ownerId = task.user_id;
     this.description = task.description;
-    this.assignedTo = task.assigned_to;
     this.projectId = task.project_id;
     this.startAt = task.start_at ? +task.start_at.getTime() : null;
     this.endAt = task.end_at ? task.end_at.getTime() : null;
     this.createdAt = task.created_at.getTime();
     this.completedAt = task.completed_at ? task.completed_at.getTime() : null;
+    this.assignedUsers = !!task.userTasks
+      ? task.userTasks.map((userTask) => new UserDto(userTask.user))
+      : [];
     this.files = files && files.map((file) => new FileDto(file));
   }
 }
