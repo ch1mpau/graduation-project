@@ -14,6 +14,6 @@ export class FileDto {
     this.type = file.type;
     this.projectId = file.project_id;
     this.taskId = file.task_id;
-    this.createdAt = file.created_at.getTime();
+    // this.createdAt = !!(file?.created_at && ) ? file?.created_at?.getTime() : null;
   }
 }

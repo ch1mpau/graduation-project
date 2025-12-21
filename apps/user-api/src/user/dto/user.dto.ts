@@ -29,7 +29,8 @@ export class UserDto {
       : avatar
         ? new FileDto(avatar)
         : null;
-    this.createdAt = user.created_at.getTime();
+    this.createdAt =
+      (!!user?.created_at && user?.created_at?.getTime()) || null;
   }
 }
 

@@ -94,7 +94,8 @@ export class ProjectService {
     query: QueryProjectsDto,
   ): Promise<ProjectPaginatedDto> {
     const qb = this.projectsRepository.createQueryBuilder('project');
-    qb.leftJoinAndSelect('project.user', 'owner');
+    qb.leftJoinAndSelect('project.user', 'user');
+    qb.leftJoinAndSelect('user.avatar', 'avatar');
     qb.leftJoin('project.tasks', 'task', 'task.project_id = project.id');
 
     // basic constraints
@@ -108,16 +109,22 @@ export class ProjectService {
       qb.andWhere('project.status = :status', { status: query.status });
     }
     qb.select([
-      'project.id as id',
-      'project.name as name',
-      'project.status as status',
-      'project.created_at as created_at',
-      'owner.email AS owner_email',
-      'project.start_at as start_at',
-      'project.end_at as end_at',
+      'project.id AS id',
+      'project.name AS name',
+      'project.status AS status',
+      'project.created_at AS created_at',
+      'project.start_at AS start_at',
+      'project.end_at AS end_at',
       'COUNT(task.id) AS task_count',
+
+      `json_build_object(
+    'id', "user"."id",
+    'email', "user"."email",
+    'name', "user"."name",
+    'avatar', avatar
+  ) AS user`,
     ]);
-    qb.groupBy('project.id, owner.email');
+    qb.groupBy('project.id, user.id, avatar.id');
     // sorting – 1 field only
     qb.orderBy(`project.created_at`, 'DESC');
 
