@@ -158,4 +158,15 @@ export class ProjectController {
   ): Promise<any> {
     return await this.projectService.createComment(auth, body);
   }
+
+  
+  @Get('task/comment')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getComment(
+    @AuthUser() auth: UserEntity,
+    @Query('taskId') query:string,
+  ): Promise<any> {
+    return await this.projectService.getComments(auth, query);
+  }
 }

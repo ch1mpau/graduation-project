@@ -57,7 +57,7 @@ export class ProjectService {
     private projectCustomerRepository: Repository<ProjectCustomerEntity>,
     @InjectRepository(CommentEntity)
     private commentRepository: Repository<CommentEntity>,
-  ) {}
+  ) { }
 
   async createProject(
     auth: UserEntity,
@@ -97,7 +97,7 @@ export class ProjectService {
     qb.leftJoinAndSelect('project.user', 'user');
     qb.leftJoinAndSelect('user.avatar', 'avatar');
     qb.leftJoin('project.tasks', 'task', 'task.project_id = project.id');
-
+    qb.leftJoin('project.customers', 'customers');
     // basic constraints
     qb.where('project.deleted_at IS NULL');
 
@@ -840,6 +840,32 @@ export class ProjectService {
         throw error;
       }
       throw new AppBadRequestException(ErrorCode.CREATE_COMMENT_ERROR);
+    }
+  }
+
+  async getComments(auth: UserEntity, taskId: string) {
+    try {
+      const comments = await this.commentRepository.find({
+        where: {
+          task_id: taskId,
+          deleted_at: null,
+        },
+        relations: {
+          user: {
+            avatar: true,
+          },
+          files: true,
+        },
+        order: {
+          created_at: 'DESC',
+        },
+      });
+      return comments.map((comment) => new CommentDto(comment));
+    } catch (error) {
+      Logger.error('Get comments error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
     }
   }
 }
