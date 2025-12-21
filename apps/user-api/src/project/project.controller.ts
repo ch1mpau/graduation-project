@@ -31,6 +31,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { DashboardDto, DashboardPercentageDto } from './dto/dashboard.dto';
 import { UploadProjectFilesDto } from './dto/upload-prj-file.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @ApiTags('Project')
 @Controller({
@@ -146,5 +147,15 @@ export class ProjectController {
     @Body() body: UploadProjectFilesDto,
   ): Promise<any> {
     return await this.projectService.uploadProjectFiles(auth, body);
+  }
+
+  @Post('task/comment')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async createComment(
+    @AuthUser() auth: UserEntity,
+    @Body() body: CreateCommentDto,
+  ): Promise<any> {
+    return await this.projectService.createComment(auth, body);
   }
 }

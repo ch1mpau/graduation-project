@@ -8,6 +8,7 @@ import { ProjectService } from './project.service';
 import { FileEntity } from '@app/core/entities/image.entity';
 import { UserTaskEntity } from '@app/core/entities/task-user.entity';
 import { ProjectCustomerEntity } from '@app/core/entities/project-customer.entity';
+import { CommentEntity } from '@app/core/entities/comment.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProjectCustomerEntity } from '@app/core/entities/project-customer.entit
       FileEntity,
       UserTaskEntity,
       ProjectCustomerEntity,
+      CommentEntity,
     ]),
   ],
   controllers: [ProjectController],

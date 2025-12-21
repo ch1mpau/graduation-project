@@ -15,6 +15,7 @@ export class UserDto {
   name: string;
   avatar: FileDto | null;
   avatar_id: string;
+  createdAt: number;
   constructor(user: UserEntity, avatar?: FileEntity | null) {
     this.id = user.id;
     this.email = user.email;
@@ -28,6 +29,7 @@ export class UserDto {
       : avatar
         ? new FileDto(avatar)
         : null;
+    this.createdAt = user.created_at.getTime();
   }
 }
 

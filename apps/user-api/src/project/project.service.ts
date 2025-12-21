@@ -36,6 +36,9 @@ import { UploadProjectFilesDto } from './dto/upload-prj-file.dto';
 import { FileEntity } from '@app/core/entities/image.entity';
 import { UserTaskEntity } from '@app/core/entities/task-user.entity';
 import { ProjectCustomerEntity } from '@app/core/entities/project-customer.entity';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { CommentEntity } from '@app/core/entities/comment.entity';
+import { CommentDto } from './dto/comment.dto';
 
 @Injectable()
 export class ProjectService {
@@ -52,6 +55,8 @@ export class ProjectService {
     private userTaskRepository: Repository<UserTaskEntity>,
     @InjectRepository(ProjectCustomerEntity)
     private projectCustomerRepository: Repository<ProjectCustomerEntity>,
+    @InjectRepository(CommentEntity)
+    private commentRepository: Repository<CommentEntity>,
   ) {}
 
   async createProject(
@@ -607,6 +612,12 @@ export class ProjectService {
           userTasks: {
             user: true,
           },
+          comments: {
+            user: {
+              avatar: true,
+            },
+            files: true,
+          },
         },
       });
       if (!task) {
@@ -768,6 +779,60 @@ export class ProjectService {
         throw error;
       }
       throw new AppBadRequestException(ErrorCode.UPLOAD_PROJECT_FILES_ERROR);
+    }
+  }
+
+  async createComment(auth: UserEntity, body: CreateCommentDto) {
+    try {
+      const { taskId, content, fileIds } = body;
+      const task = await this.tasksRepository.findOne({
+        where: {
+          id: taskId,
+          deleted_at: null,
+        },
+      });
+      if (!task) {
+        throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
+      }
+      if (task.status === TaskStatusEnum.COMPLETED) {
+        throw new AppBadRequestException(ErrorCode.TASK_COMPLETED);
+      }
+      const comment = await this.commentRepository.save(
+        this.commentRepository.create({
+          task_id: taskId,
+          user_id: auth.id,
+          content,
+        }),
+      );
+      if (!!Array.isArray(fileIds) && fileIds.length > 0) {
+        await this.filesRepository.update(
+          {
+            id: In(fileIds),
+          },
+          {
+            comment_id: comment.id as any,
+          },
+        );
+      }
+      const createdComment = await this.commentRepository.findOne({
+        where: {
+          id: comment.id,
+          deleted_at: null,
+        },
+        relations: {
+          user: {
+            avatar: true,
+          },
+          files: true,
+        },
+      });
+      return new CommentDto(createdComment);
+    } catch (error) {
+      Logger.error('Create comment error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.CREATE_COMMENT_ERROR);
     }
   }
 }

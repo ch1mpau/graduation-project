@@ -36,6 +36,7 @@ const defaultErrorMessages: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.UPLOAD_PROJECT_FILES_ERROR]: 'Upload Project Files Error',
   [ErrorCode.UPLOAD_FILE_ERROR]: 'Upload File Error',
   [ErrorCode.GET_PROJECT_ERROR]: 'Get Project Error',
+  [ErrorCode.CREATE_COMMENT_ERROR]: 'Create Comment Error',
 };
 
 export function resolveErrorMessage(code: ErrorCode) {

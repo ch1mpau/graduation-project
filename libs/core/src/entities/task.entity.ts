@@ -5,6 +5,7 @@ import { WithId } from './with-id.entity';
 import { ProjectEntity } from './project.entity';
 import { UserEntity } from './user.entity';
 import { UserTaskEntity } from './task-user.entity';
+import { CommentEntity } from './comment.entity';
 
 @Entity({
   name: 'task',
@@ -50,4 +51,7 @@ export class TaskEntity extends WithId(DateEntity) {
 
   @OneToMany(() => UserTaskEntity, (ut) => ut.task)
   userTasks: UserTaskEntity[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.task)
+  comments: CommentEntity[];
 }

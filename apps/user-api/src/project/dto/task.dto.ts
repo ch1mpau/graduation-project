@@ -5,6 +5,7 @@ import { TaskEntity } from '@app/core/entities/task.entity';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { FileDto } from '../../file/dto/file.dto';
 import { UserDto } from '../../user/dto/user.dto';
+import { CommentDto } from './comment.dto';
 
 export enum GetTaskTypeEnum {
   SLOW_PROCESS = 'SLOW_PROCESS',
@@ -24,6 +25,7 @@ export class TaskDto {
   createdAt: number;
   completedAt: number;
   files?: FileDto[];
+  comments?: CommentDto[];
 
   constructor(task: TaskEntity, files?: FileEntity[]) {
     this.id = task.id;
@@ -41,6 +43,11 @@ export class TaskDto {
       ? task.userTasks.map((userTask) => new UserDto(userTask.user))
       : [];
     this.files = files && files.map((file) => new FileDto(file));
+    this.comments = Array.isArray(task.comments)
+      ? task.comments
+          .map((comment) => new CommentDto(comment))
+          .sort((a, b) => a.createdAt - b.createdAt)
+      : [];
   }
 }
 
