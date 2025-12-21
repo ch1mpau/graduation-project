@@ -7,7 +7,6 @@ import { UserDto } from '../../user/dto/user.dto';
 export class ProjectDto {
   id: string;
   name: string;
-  client: string;
   status: ProjectStatusEnum;
   ownerId: string;
   taskCount: number;
@@ -15,10 +14,10 @@ export class ProjectDto {
   startAt: number;
   endAt: number;
   owner: UserDto | null;
+  customers: UserDto[];
   constructor(project: ProjectEntity) {
     this.id = project.id;
     this.name = project.name;
-    this.client = project.client;
     this.status = project.status;
     this.ownerId = project.owner_id;
     this.taskCount = +project.task_count;
@@ -26,6 +25,9 @@ export class ProjectDto {
     this.createdAt = project.created_at ? project.created_at.getTime() : null;
     this.startAt = project.start_at ? project.start_at.getTime() : null;
     this.endAt = project.end_at ? project.end_at.getTime() : null;
+    this.customers = !!project.customers
+      ? project.customers.map((customer) => new UserDto(customer.user))
+      : [];
   }
 }
 

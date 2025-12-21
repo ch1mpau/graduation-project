@@ -1,11 +1,13 @@
 import { ProjectStatusEnum } from '@app/core/constants/project.enum';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class UpdateProjectDto {
@@ -15,15 +17,16 @@ export class UpdateProjectDto {
 
   @IsString()
   @IsOptional()
-  client: string;
-
-  @IsString()
-  @IsOptional()
   name: string;
 
   @IsEnum(ProjectStatusEnum)
   @IsOptional()
   status: ProjectStatusEnum;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  customers: string[];
 
   @IsOptional()
   @Type(() => Number)

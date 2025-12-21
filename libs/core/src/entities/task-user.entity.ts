@@ -11,18 +11,14 @@ export class UserTaskEntity extends WithId(DateEntity) {
   @Column({ type: 'uuid' })
   user_id: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.taskUsers, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => UserEntity, (user) => user.taskUsers, {})
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @Column({ type: 'uuid' })
   task_id: string;
 
-  @ManyToOne(() => TaskEntity, (task) => task.users, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => TaskEntity, (task) => task.users, {})
   @JoinColumn({ name: 'task_id' })
   task: TaskEntity;
 }

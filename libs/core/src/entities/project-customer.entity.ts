@@ -11,18 +11,14 @@ export class ProjectCustomerEntity extends WithId(DateEntity) {
   @Column({ type: 'uuid' })
   user_id: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.projectCustomers, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => UserEntity, (user) => user.projectCustomers, {})
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @Column({ type: 'uuid' })
   project_id: string;
 
-  @ManyToOne(() => ProjectEntity, (project) => project.customers, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => ProjectEntity, (project) => project.customers, {})
   @JoinColumn({ name: 'project_id' })
   project: ProjectEntity;
 }

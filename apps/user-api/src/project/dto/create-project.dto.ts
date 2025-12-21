@@ -10,16 +10,12 @@ import {
 
 export class CreateProjectDto {
   @IsString()
-  @IsOptional()
-  client: string;
-
-  @IsString()
   @IsNotEmpty()
   name: string;
 
   @IsEnum(ProjectStatusEnum)
   @IsOptional()
-  status: ProjectStatusEnum = ProjectStatusEnum.START;
+  status: ProjectStatusEnum = ProjectStatusEnum.PENDING;
 
   @IsOptional()
   @Type(() => Number)

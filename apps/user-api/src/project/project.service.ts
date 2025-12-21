@@ -105,7 +105,6 @@ export class ProjectService {
     qb.select([
       'project.id as id',
       'project.name as name',
-      'project.client as client',
       'project.status as status',
       'project.created_at as created_at',
       'owner.email AS owner_email',
@@ -120,7 +119,25 @@ export class ProjectService {
     // pagination
     qb.limit(query.take);
     qb.offset((query.page - 1) * query.take);
+    if (auth.role === Role.CUSTOMER) {
+      const projectCustomers = await this.projectCustomerRepository.find({
+        where: {
+          user_id: auth.id,
+          deleted_at: null,
+        },
+        select: ['project_id'],
+      });
+      const projectIds = projectCustomers.map((pc) => pc.project_id);
 
+      if (projectIds.length > 0) {
+        qb.andWhere('project.id IN (:...projectIds)', {
+          projectIds,
+        });
+      } else {
+        // user không thuộc project nào → trả empty
+        qb.andWhere('1 = 0');
+      }
+    }
     const projects = await qb.getRawMany();
     const total = await qb.getCount();
 
@@ -232,7 +249,12 @@ export class ProjectService {
         whereOptions['status'] = Not(TaskStatusEnum.COMPLETED);
       }
       if (userId) {
-        whereOptions['assigned_to'] = userId;
+        const userTasks = await this.userTaskRepository.find({
+          where: {
+            user_id: userId,
+          },
+        });
+        whereOptions['id'] = In(userTasks.map((userTask) => userTask.task_id));
         whereOptions['status'] = Not(TaskStatusEnum.COMPLETED);
       }
       const [tasks, total] = await this.tasksRepository.findAndCount({
@@ -288,11 +310,16 @@ export class ProjectService {
     body: UpdateProjectDto,
   ): Promise<ProjectDto> {
     try {
-      const { projectId, name, status, client, startAt, endAt } = body;
+      const { projectId, name, status, startAt, endAt, customers } = body;
       const project = await this.projectsRepository.findOne({
         where: {
           id: projectId,
           deleted_at: null,
+        },
+        relations: {
+          customers: {
+            user: true,
+          },
         },
       });
       if (!project) {
@@ -314,10 +341,6 @@ export class ProjectService {
         project.status = status;
         needUpdate = true;
       }
-      if (client !== undefined && client !== project.client) {
-        project.client = client;
-        needUpdate = true;
-      }
       const startAtTime = startAt ? new Date(startAt) : undefined;
       const endAtTime = endAt ? new Date(endAt) : undefined;
       if (startAtTime !== undefined && startAtTime !== project.start_at) {
@@ -328,6 +351,41 @@ export class ProjectService {
         project.end_at = endAtTime;
         needUpdate = true;
       }
+      if (Array.isArray(customers)) {
+        const existedCustomerIds = project.customers.map((c) => c.user_id);
+
+        const toCreate = customers.filter(
+          (id) => !existedCustomerIds.includes(id),
+        );
+
+        const toDelete = existedCustomerIds.filter(
+          (id) => !customers.includes(id),
+        );
+
+        if (toCreate.length > 0) {
+          const newCustomers = toCreate.map((userId) =>
+            this.projectCustomerRepository.create({
+              project_id: projectId,
+              user_id: userId,
+            }),
+          );
+          const created =
+            await this.projectCustomerRepository.save(newCustomers);
+          project.customers = [...project.customers, ...created];
+        }
+
+        if (toDelete.length > 0) {
+          const deleted = await this.projectCustomerRepository.softDelete({
+            project_id: project.id,
+            user_id: In(toDelete),
+          });
+          project.customers = project.customers.filter(
+            (c) => !toDelete.includes(c.user_id),
+          );
+        }
+        needUpdate = true;
+      }
+
       if (needUpdate) {
         await this.projectsRepository.save(project);
         if (!!updateTaskCompleted) {
@@ -339,6 +397,20 @@ export class ProjectService {
             },
           );
         }
+      }
+      if (!!project.customers && project.customers.length > 0) {
+        const customers = await this.projectCustomerRepository.find({
+          where: {
+            project_id: project.id,
+            deleted_at: null,
+          },
+          relations: {
+            user: {
+              avatar: true,
+            },
+          },
+        });
+        project.customers = customers;
       }
       return new ProjectDto(project);
     } catch (error) {
@@ -370,7 +442,6 @@ export class ProjectService {
         },
         relations: ['userTasks'],
       });
-      console.log(44444, task);
 
       if (!task) {
         throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
@@ -477,9 +548,13 @@ export class ProjectService {
         .createQueryBuilder('project')
         .leftJoinAndSelect('project.user', 'user')
         .leftJoinAndSelect('user.avatar', 'avatar')
+        .leftJoinAndSelect('project.customers', 'customers')
+        .leftJoinAndSelect('customers.user', 'customersUser')
+        .leftJoinAndSelect('customersUser.avatar', 'customersAvatar')
         .where('project.id = :projectId', { projectId })
         .andWhere('project.deleted_at IS NULL')
         .getOne();
+      console.log(44444, project);
 
       if (!project) {
         throw new AppBadRequestException(ErrorCode.PROJECT_NOT_FOUND);
