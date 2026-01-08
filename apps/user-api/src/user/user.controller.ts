@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Put,
   Query,
   UseGuards,
@@ -17,6 +19,7 @@ import { JwtAuthGuard } from '../auth/gaurds/jwt.guard';
 import { AuthUser } from '@app/core/decorators/auth-user.decorator';
 import { QueryEmployeesDto, UserDto } from './dto/user.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { RequireDirector } from '@app/core';
 
 @ApiTags('User')
 @Controller({
@@ -52,5 +55,16 @@ export class UserController {
     @Body() body: UpdateMeDto,
   ): Promise<UserDto> {
     return await this.userService.updateMe(auth, body);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @RequireDirector()
+  @HttpCode(HttpStatus.OK)
+  async deleteProject(
+    @AuthUser() auth: UserEntity,
+    @Param('id') id: string,
+  ): Promise<any> {
+    return await this.userService.deleteUser(auth, id);
   }
 }

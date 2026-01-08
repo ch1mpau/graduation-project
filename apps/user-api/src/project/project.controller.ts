@@ -76,8 +76,19 @@ export class ProjectController {
   async deleteProject(
     @AuthUser() auth: UserEntity,
     @Param('id') id: string,
-  ): Promise<ProjectPaginatedDto> {
+  ): Promise<any> {
     return await this.projectService.deleteProject(auth, id);
+  }
+
+  @Delete('/task/:id')
+  @UseGuards(JwtAuthGuard)
+  @RequireDirector()
+  @HttpCode(HttpStatus.OK)
+  async deleteTask(
+    @AuthUser() auth: UserEntity,
+    @Param('id') id: string,
+  ): Promise<any> {
+    return await this.projectService.deleteTask(auth, id);
   }
 
   @Put('')
@@ -159,13 +170,12 @@ export class ProjectController {
     return await this.projectService.createComment(auth, body);
   }
 
-  
   @Get('task/comment')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async getComment(
     @AuthUser() auth: UserEntity,
-    @Query('taskId') query:string,
+    @Query('taskId') query: string,
   ): Promise<any> {
     return await this.projectService.getComments(auth, query);
   }

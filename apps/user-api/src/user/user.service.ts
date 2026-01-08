@@ -48,7 +48,13 @@ export class UserService {
         });
       }
       if (query.role) {
-        qb.andWhere('user.role = :qRole', { qRole: query.role });
+        if (query.role === Role.Employee) {
+          qb.andWhere('user.role NOT IN (:...roles)', {
+            roles: [Role.Employee, Role.Director],
+          });
+        } else {
+          qb.andWhere('user.role = :qRole', { qRole: query.role });
+        }
       }
 
       // sorting – 1 field only
@@ -146,6 +152,30 @@ export class UserService {
       } else {
         throw new AppBadRequestException(ErrorCode.UPDATE_TASK_ERROR);
       }
+    }
+  }
+
+  async deleteUser(auth: UserEntity, id: string): Promise<any> {
+    try {
+      const task = await this.usersRepository.findOne({
+        where: {
+          id,
+          deleted_at: null,
+        },
+      });
+      if (!task) {
+        throw new AppBadRequestException(ErrorCode.USER_NOT_FOUND);
+      }
+      await this.usersRepository.update(id, {
+        status: StatusAccount.DELETED as any,
+      });
+      return;
+    } catch (error) {
+      Logger.error('Delete user error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.DELETE_USER_ERROR);
     }
   }
 }

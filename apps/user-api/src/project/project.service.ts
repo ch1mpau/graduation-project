@@ -57,7 +57,7 @@ export class ProjectService {
     private projectCustomerRepository: Repository<ProjectCustomerEntity>,
     @InjectRepository(CommentEntity)
     private commentRepository: Repository<CommentEntity>,
-  ) { }
+  ) {}
 
   async createProject(
     auth: UserEntity,
@@ -291,10 +291,7 @@ export class ProjectService {
     }
   }
 
-  async deleteProject(
-    auth: UserEntity,
-    id: string,
-  ): Promise<ProjectPaginatedDto> {
+  async deleteProject(auth: UserEntity, id: string): Promise<any> {
     try {
       const project = await this.projectsRepository.findOne({
         where: {
@@ -314,6 +311,28 @@ export class ProjectService {
         throw error;
       }
       throw new AppBadRequestException(ErrorCode.DELETE_PROJECT_ERROR);
+    }
+  }
+
+  async deleteTask(auth: UserEntity, id: string): Promise<any> {
+    try {
+      const task = await this.tasksRepository.findOne({
+        where: {
+          id,
+          deleted_at: null,
+        },
+      });
+      if (!task) {
+        throw new AppBadRequestException(ErrorCode.TASK_NOT_FOUND);
+      }
+      await this.tasksRepository.softDelete(id);
+      return;
+    } catch (error) {
+      Logger.error('Delete task error' + error);
+      if (error instanceof AppBadRequestException) {
+        throw error;
+      }
+      throw new AppBadRequestException(ErrorCode.DELETE_TASK_ERROR);
     }
   }
 

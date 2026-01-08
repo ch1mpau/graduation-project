@@ -17,7 +17,7 @@ export class ProjectDto {
   customers: UserDto[];
   constructor(project: ProjectEntity) {
     console.log(4343333, project.customers);
-    
+
     this.id = project.id;
     this.name = project.name;
     this.status = project.status;
@@ -27,9 +27,10 @@ export class ProjectDto {
     this.createdAt = project.created_at ? project.created_at.getTime() : null;
     this.startAt = project.start_at ? project.start_at.getTime() : null;
     this.endAt = project.end_at ? project.end_at.getTime() : null;
-    this.customers = (!!project.customers && project.customers.length > 0)
-      ? project.customers.map((customer) => new UserDto(customer.user))
-      : [];
+    this.customers =
+      !!project.customers && project.customers.length > 0
+        ? project.customers.map((customer) => new UserDto(customer.user))
+        : [];
   }
 }
 

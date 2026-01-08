@@ -18,7 +18,7 @@ export class UserDto {
   createdAt: number;
   constructor(user: UserEntity, avatar?: FileEntity | null) {
     console.log(88888, user);
-    
+
     this.id = user.id;
     this.email = user.email;
     this.phoneNumber = user.phone_number;
