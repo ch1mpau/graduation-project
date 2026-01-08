@@ -49,7 +49,7 @@ export class UserService {
       }
       if (query.role) {
         if (query.role === Role.Employee) {
-          qb.andWhere('user.role NOT IN (:...roles)', {
+          qb.andWhere('user.role IN (:...roles)', {
             roles: [Role.Employee, Role.Director],
           });
         } else {
